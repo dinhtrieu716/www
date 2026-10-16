@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotly - Khám Phá Địa Điểm Tuyệt Vời Quanh Bạn</title>
+  
+  <!-- Google Fonts: Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            spotly: {
+              primary: '#00897B',
+              hover: '#00796B',
+              dark: '#064E3B',
+              forest: '#043632',
+              light: '#E6F4F1',
+              tint: '#F0FDF4',
+              surface: '#F8FAFC'
+            }
+          },
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none"></div>
+
+  <!-- DEMO / SCREEN SWITCHER TOOLBAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 text-slate-500 font-medium">
+        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#E6F4F1] text-[#00897B] font-bold text-[10px]">
+          <i class="fa-solid fa-layer-group"></i>
+        </span>
+        <span class="hidden sm:inline font-semibold text-slate-700">Xem màn hình theo Mockup:</span>
+      </div>
+
+      <!-- Quick Switch Pills -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+        <button onclick="switchView('view-home')" data-target="view-home" class="demo-nav-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-[#00897B] text-white shadow-sm transition-standard whitespace-nowrap">
+          1. Trang chủ (Home)
+        </button>
+        <button onclick="switchView('view-search')" data-target="view-search" class="demo-nav-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-standard whitespace-nowrap">
+          2. Tìm kiếm (Search)
+        </button>
+        <button onclick="switchView('view-detail')" data-target="view-detail" class="demo-nav-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-standard whitespace-nowrap">
+          3. Chi tiết địa điểm
+        </button>
+        <button onclick="switchView('view-review')" data-target="view-review" class="demo-nav-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-standard whitespace-nowrap">
+          4. Viết đánh giá
+        </button>
+        <button onclick="switchView('view-auth')" data-target="view-auth" class="demo-nav-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-standard whitespace-nowrap">
+          5. Đăng nhập / Đăng ký
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN NAVIGATION HEADER -->
+  <header class="bg-white border-b border-slate-100 sticky top-10 sm:top-11 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div onclick="switchView('view-home')" class="flex items-center gap-2.5 cursor-pointer group">
+        <!-- Teal Pin Icon -->
+        <div class="w-9 h-9 rounded-full bg-[#00897B] flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+          </svg>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-[#00796B]">Spotly</span>
+      </div>
+
+      <!-- Center Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
+        <button id="nav-link-home" onclick="switchView('view-home')" class="font-semibold text-[#00897B] transition-colors hover:text-[#00897B]">
+          Khám phá
+        </button>
+        <button id="nav-link-search" onclick="switchView('view-search')" class="font-medium text-slate-600 transition-colors hover:text-[#00897B]">
+          Địa điểm
+        </button>
+        <button id="nav-link-fav" onclick="showToast('Đang lọc các địa điểm bạn đã yêu thích!')" class="font-medium text-slate-600 transition-colors hover:text-[#00897B]">
+          Yêu thích
+        </button>
+      </nav>
+
+      <!-- Right Action Icons: Search & Profile Avatar -->
+      <div class="flex items-center gap-4">
+        <button onclick="switchView('view-search')" class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors" title="Tìm kiếm">
+          <i class="fa-solid fa-magnifying-glass text-base"></i>
+        </button>
+
+        <div onclick="switchView('view-auth')" class="relative cursor-pointer" title="Tài khoản / Đăng nhập">
+          <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80" 
+               alt="User Avatar" 
+               class="w-9 h-9 rounded-full object-cover ring-2 ring-slate-100 hover:ring-[#00897B] transition-all">
+          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: TRANG CHỦ (HOME)                    -->
+    <!-- ========================================== -->
+    <div id="view-home" class="view-panel">
+      
+      <!-- HERO BANNER SECTION -->
+      <div class="relative w-full min-h-[380px] sm:min-h-[440px] flex flex-col justify-center items-center text-center px-4 bg-slate-900">
+        <!-- Cafe Background Image with isolated overflow-hidden -->
+        <div class="absolute inset-0 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1600&q=85" 
+               alt="Cafe Cozy Scene" 
+               class="w-full h-full object-cover opacity-55">
+          <!-- Dark Gradient Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/50 to-slate-950/70"></div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="relative z-10 max-w-3xl mx-auto pt-8 pb-24 sm:pb-28">
+          <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight sm:leading-tight">
+            Đi đâu hôm nay?
+          </h1>
+          <p class="mt-4 text-base sm:text-lg text-slate-200 font-medium tracking-wide flex items-center justify-center gap-2">
+            <span>Ăn ngon</span>
+            <span class="text-teal-400">•</span>
+            <span>Gặp bạn</span>
+            <span class="text-teal-400">•</span>
+            <span>Khám phá cuộc sống</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- FLOATING SEARCH FILTER CARD (MATCHING MOCKUP EXACTLY) -->
+      <div class="relative z-30 -mt-20 sm:-mt-24 max-w-4xl mx-auto px-4 w-full">
+        <div class="bg-white rounded-3xl sm:rounded-[28px] shadow-2xl border border-slate-100 p-4 sm:p-5">
+          
+          <!-- Top Search Input -->
+          <div class="relative mb-3.5">
+            <span class="absolute inset-y-0 left-0 pl-4.5 flex items-center pointer-events-none text-slate-500">
+              <i class="fa-solid fa-magnifying-glass text-base sm:text-lg"></i>
+            </span>
+            <input id="home-search-input" 
+                   type="text" 
+                   placeholder="Tìm quán ăn, cà phê, địa điểm vui chơi..." 
+                   onkeydown="if(event.key === 'Enter') executeHomeSearch()"
+                   class="w-full h-12 sm:h-14 pl-12 pr-4 rounded-full border border-slate-200 text-sm sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all bg-white shadow-2xs">
+          </div>
+
+          <!-- Bottom Row: 4 Filter Items (Ngân sách, Vị trí, Mục đích, Tìm kiếm) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
+            
+            <!-- 1. Ngân sách -->
+            <div class="relative">
+              <div onclick="toggleHomeDropdown('budget', event)" 
+                   class="h-full min-h-[58px] rounded-2xl border border-slate-200 hover:border-[#00897B] bg-white px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition-all shadow-2xs hover:shadow-xs group select-none">
+                <!-- Circle Icon -->
+                <div class="w-10 h-10 rounded-full bg-[#EBF5F3] flex items-center justify-center text-slate-800 flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-location-dot text-slate-800 text-sm"></i>
+                </div>
+                <!-- Text Block -->
+                <div class="flex-1 text-left min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Ngân sách</div>
+                  <div id="home-budget-display" class="text-xs text-slate-500 font-normal mt-0.5 truncate">Tất cả</div>
+                </div>
+                <!-- Chevron Icon -->
+                <i class="fa-solid fa-chevron-down text-[11px] text-slate-400"></i>
+              </div>
+
+              <!-- Dropdown Menu -->
+              <div id="home-dropdown-budget" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 text-xs sm:text-sm divide-y divide-slate-50">
+                <div onclick="selectHomeBudget('all', 'Tất cả', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Tất cả</div>
+                <div onclick="selectHomeBudget('under_20k', '< 20k', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">&lt; 20k</div>
+                <div onclick="selectHomeBudget('20k-60k', '20k - 60k', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">20k - 60k</div>
+                <div onclick="selectHomeBudget('50k-80k', '50k - 80k', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">50k - 80k</div>
+                <div onclick="selectHomeBudget('above_80k', '> 80k', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">&gt; 80k</div>
+              </div>
+            </div>
+
+            <!-- 2. Vị trí -->
+            <div class="relative">
+              <div onclick="toggleHomeDropdown('location', event)" 
+                   class="h-full min-h-[58px] rounded-2xl border border-slate-200 hover:border-[#00897B] bg-white px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition-all shadow-2xs hover:shadow-xs group select-none">
+                <!-- Circle Icon -->
+                <div class="w-10 h-10 rounded-full bg-[#EBF5F3] flex items-center justify-center text-slate-800 flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-location-dot text-slate-800 text-sm"></i>
+                </div>
+                <!-- Text Block -->
+                <div class="flex-1 text-left min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Vị trí</div>
+                  <div id="home-location-display" class="text-xs text-slate-500 font-normal mt-0.5 truncate">Gần bạn</div>
+                </div>
+                <!-- Chevron Icon -->
+                <i class="fa-solid fa-chevron-down text-[11px] text-slate-400"></i>
+              </div>
+
+              <!-- Dropdown Menu -->
+              <div id="home-dropdown-location" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 text-xs sm:text-sm divide-y divide-slate-50">
+                <div onclick="selectHomeLocation('near_me', 'Gần bạn', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Gần bạn</div>
+                <div onclick="selectHomeLocation('haichau', 'Quận Hải Châu', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Quận Hải Châu</div>
+                <div onclick="selectHomeLocation('sontra', 'Quận Sơn Trà', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Quận Sơn Trà</div>
+                <div onclick="selectHomeLocation('nguhanhson', 'Quận Ngũ Hành Sơn', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Quận Ngũ Hành Sơn</div>
+                <div onclick="selectHomeLocation('thanhkhe', 'Quận Thanh Khê', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Quận Thanh Khê</div>
+              </div>
+            </div>
+
+            <!-- 3. Mục đích -->
+            <div class="relative">
+              <div onclick="toggleHomeDropdown('purpose', event)" 
+                   class="h-full min-h-[58px] rounded-2xl border border-slate-200 hover:border-[#00897B] bg-white px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition-all shadow-2xs hover:shadow-xs group select-none">
+                <!-- Circle Icon -->
+                <div class="w-10 h-10 rounded-full bg-[#EBF5F3] flex items-center justify-center text-slate-800 flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-star text-slate-800 text-sm"></i>
+                </div>
+                <!-- Text Block -->
+                <div class="flex-1 text-left min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Mục đích</div>
+                  <div id="home-purpose-display" class="text-xs text-slate-500 font-normal mt-0.5 truncate">Tất cả</div>
+                </div>
+                <!-- Chevron Icon -->
+                <i class="fa-solid fa-chevron-down text-[11px] text-slate-400"></i>
+              </div>
+
+              <!-- Dropdown Menu -->
+              <div id="home-dropdown-purpose" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 text-xs sm:text-sm divide-y divide-slate-50">
+                <div onclick="selectHomePurpose('all', 'Tất cả', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Tất cả</div>
+                <div onclick="selectHomePurpose('study', 'Học tập', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Học tập</div>
+                <div onclick="selectHomePurpose('meet', 'Gặp gỡ', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Gặp gỡ</div>
+                <div onclick="selectHomePurpose('eat', 'Ăn uống', event)" class="px-4 py-2.5 hover:bg-[#EBF5F3] hover:text-[#00897B] cursor-pointer font-medium text-slate-700 transition-colors">Ăn uống</div>
+              </div>
+            </div>
+
+            <!-- 4. Button: Tìm kiếm -->
+            <button onclick="executeHomeSearch()" 
+                    class="h-full min-h-[58px] py-3.5 px-6 rounded-2xl font-bold text-sm sm:text-base bg-[#00897B] hover:bg-[#00796B] text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center cursor-pointer active:scale-98">
+              <span>Tìm kiếm</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: ĐỊA ĐIỂM GỢI Ý CHO BẠN -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Địa điểm gợi ý cho bạn
+          </h2>
+          <button onclick="switchView('view-search')" class="text-sm font-semibold text-[#00897B] hover:text-[#00796B] flex items-center gap-1.5 transition-colors">
+            <span>Xem tất cả</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- 4 Cards Grid -->
+        <div id="home-suggestions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Populated by JavaScript with exact venues from Mockup 1: The Coffee House, Bánh Mì Như Lan, Highlands, Phúc Long -->
+        </div>
+      </section>
+
+      <!-- PROMO CTA BANNER (MATCHING MOCKUP 1) -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
+        <div class="bg-[#E6F4F1] rounded-3xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-teal-100/80 shadow-xs relative overflow-hidden">
+          
+          <!-- Left: Friendly Illustration -->
+          <div class="flex items-center gap-6">
+            <div class="w-32 sm:w-40 h-28 sm:h-32 flex-shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 200 160" class="w-full h-full">
+                <!-- Soft background cloud -->
+                <ellipse cx="100" cy="90" rx="90" ry="60" fill="#D0EBE5" />
+                <circle cx="150" cy="50" r="18" fill="#FDE68A" opacity="0.6"/>
+                <!-- Person 1 (Boy with green hoodie) -->
+                <circle cx="70" cy="65" r="22" fill="#F87171" opacity="0.1"/>
+                <circle cx="70" cy="62" r="19" fill="#FCD34D" />
+                <!-- Hair -->
+                <path d="M52 58 C 55 42, 85 42, 88 58 C 88 52, 75 48, 60 52 Z" fill="#1E293B"/>
+                <!-- Face -->
+                <circle cx="70" cy="62" r="15" fill="#FED7AA"/>
+                <!-- Eye and smile -->
+                <circle cx="75" cy="60" r="1.5" fill="#1E293B"/>
+                <path d="M72 68 Q 76 72 80 68" stroke="#1E293B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- Body / Hoodie -->
+                <path d="M50 120 C 50 88, 90 88, 90 120 Z" fill="#00897B"/>
+                <!-- Person 2 (Girl with white blouse) -->
+                <circle cx="125" cy="75" r="18" fill="#FED7AA"/>
+                <!-- Long Hair -->
+                <path d="M108 72 C 108 55, 142 55, 142 72 C 145 92, 138 110, 138 115 C 132 110, 135 90, 132 80 C 128 80, 115 80, 112 115 Z" fill="#334155"/>
+                <circle cx="125" cy="74" r="14" fill="#FED7AA"/>
+                <circle cx="120" cy="72" r="1.5" fill="#1E293B"/>
+                <path d="M117 79 Q 121 83 125 79" stroke="#1E293B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- Blouse -->
+                <path d="M108 120 C 108 95, 142 95, 142 120 Z" fill="#FFFFFF"/>
+                <!-- Small sparkling hearts & stars -->
+                <path d="M102 38 Q 104 30 106 38 Q 114 40 106 42 Q 104 50 102 42 Q 94 40 102 38 Z" fill="#F59E0B"/>
+                <circle cx="160" cy="85" r="3" fill="#00897B"/>
+                <circle cx="45" cy="75" r="2.5" fill="#00897B"/>
+              </svg>
+            </div>
+
+            <!-- Middle Text -->
+            <div>
+              <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Tạo kỷ niệm đẹp
+              </h3>
+              <p class="text-sm sm:text-base text-slate-600 mt-1 font-medium">
+                cùng bạn bè tại những địa điểm tuyệt vời!
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Button -->
+          <button onclick="switchView('view-search')" 
+                  class="flex-shrink-0 bg-[#00897B] hover:bg-[#00796B] text-white px-7 py-3.5 rounded-2xl font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer">
+            <span>Khám phá ngay</span>
+            <i class="fa-solid fa-arrow-right text-sm"></i>
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: TRANG KẾT QUẢ TÌM KIẾM (SEARCH)    -->
+    <!-- ========================================== -->
+    <div id="view-search" class="view-panel hidden max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      
+      <!-- Top Search Bar Container (Matching Mockup 2) -->
+      <div class="mb-6">
+        <div class="relative flex items-center">
+          <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-magnifying-glass text-base"></i>
+          </span>
+          <input id="search-main-input" 
+                 type="text" 
+                 value="cà phê" 
+                 placeholder="Tìm quán ăn, cà phê, địa điểm vui chơi..." 
+                 class="w-full pl-11 pr-12 py-3 rounded-2xl border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 bg-white shadow-xs">
+          <button id="search-input-clear" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors" title="Xóa">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Filter Pill Tags Row -->
+        <div class="flex items-center gap-2.5 mt-3 overflow-x-auto no-scrollbar pb-1 text-xs sm:text-sm">
+          <button onclick="setBudgetFilter('20k-60k')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-teal-200 bg-[#E6F4F1] text-[#00897B] font-semibold whitespace-nowrap">
+            <span>Ngân sách: 20k - 60k</span>
+            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+          </button>
+          <button onclick="setLocationFilter('near_me')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-teal-200 bg-[#E6F4F1] text-[#00897B] font-semibold whitespace-nowrap">
+            <span>Vị trí: Đà Nẵng</span>
+            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+          </button>
+          <button onclick="togglePurposeFilter('study')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-teal-200 bg-[#E6F4F1] text-[#00897B] font-semibold whitespace-nowrap">
+            <span>Mục đích: Mặc định</span>
+            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2-COLUMN LAYOUT (SIDEBAR FILTERS + RESULTS LIST) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT SIDEBAR: BỘ LỌC (MATCHING MOCKUP 2) -->
+        <aside class="lg:col-span-4 bg-white rounded-2xl border border-slate-100 p-5 shadow-xs">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <h3 class="font-bold text-slate-900 text-lg">Bộ lọc</h3>
+            <button onclick="setBudgetFilter('all'); setLocationFilter('near_me'); renderSearchResults();" class="text-xs font-semibold text-[#00897B] hover:underline">
+              Đặt lại
+            </button>
+          </div>
+
+          <!-- Filter Group 1: Ngân sách (VNĐ) -->
+          <div class="mb-6">
+            <h4 class="text-sm font-bold text-slate-800 mb-3">Ngân sách (VNĐ)</h4>
+            <div class="space-y-2.5 text-sm text-slate-600">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="budget" value="under_20k" onchange="setBudgetFilter(this.value)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span>&lt; 20k</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="budget" value="20k-60k" checked onchange="setBudgetFilter(this.value)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span class="font-semibold text-slate-800">20k - 60k</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="budget" value="50k-80k" onchange="setBudgetFilter(this.value)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span>50k - 80k</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="budget" value="above_80k" onchange="setBudgetFilter(this.value)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span>&gt; 80k</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Filter Group 2: Vị trí -->
+          <div class="mb-6">
+            <h4 class="text-sm font-bold text-slate-800 mb-3">Vị trí</h4>
+            <div class="space-y-1.5 text-sm">
+              <button id="filter-loc-near_me" onclick="setLocationFilter('near_me')" 
+                      class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#E6F4F1] text-[#00897B] flex items-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-solid fa-circle-dot text-xs text-[#00897B]"></i>
+                <span>Gần tôi (Đà Nẵng)</span>
+              </button>
+              <button id="filter-loc-haichau" onclick="setLocationFilter('haichau')" 
+                      class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-regular fa-circle text-xs text-slate-300"></i>
+                <span>Quận Hải Châu</span>
+              </button>
+              <button id="filter-loc-sontra" onclick="setLocationFilter('sontra')" 
+                      class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-regular fa-circle text-xs text-slate-300"></i>
+                <span>Quận Sơn Trà</span>
+              </button>
+              <button id="filter-loc-nguhanhson" onclick="setLocationFilter('nguhanhson')" 
+                      class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-regular fa-circle text-xs text-slate-300"></i>
+                <span>Quận Ngũ Hành Sơn</span>
+              </button>
+              <button id="filter-loc-thanhkhe" onclick="setLocationFilter('thanhkhe')" 
+                      class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-regular fa-circle text-xs text-slate-300"></i>
+                <span>Quận Thanh Khê</span>
+              </button>
+              <button id="filter-loc-other" onclick="setLocationFilter('other')" 
+                      class="w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-regular fa-circle text-xs text-slate-300"></i>
+                <span>Khu vực khác</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Group 3: Mục đích -->
+          <div class="mb-6">
+            <h4 class="text-sm font-bold text-slate-800 mb-3">Mục đích</h4>
+            <div class="space-y-2.5 text-sm text-slate-600">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked onchange="togglePurposeFilter('study')" class="w-4 h-4 rounded text-[#00897B] focus:ring-[#00897B]">
+                <span class="font-medium text-slate-800">Học tập</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" onchange="togglePurposeFilter('meet')" class="w-4 h-4 rounded text-[#00897B] focus:ring-[#00897B]">
+                <span>Gặp gỡ</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" onchange="togglePurposeFilter('eat')" class="w-4 h-4 rounded text-[#00897B] focus:ring-[#00897B]">
+                <span>Ăn uống</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Filter Group 4: Đánh giá -->
+          <div>
+            <h4 class="text-sm font-bold text-slate-800 mb-3">Đánh giá</h4>
+            <div class="space-y-2 text-sm text-slate-600">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="rating" value="4.5" checked onchange="setRatingFilter(4.5)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span class="font-semibold text-slate-800">Từ 4.5 trở lên</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="rating" value="4.0" onchange="setRatingFilter(4.0)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span>Từ 4.0 trở lên</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="rating" value="3.5" onchange="setRatingFilter(3.5)" class="w-4 h-4 text-[#00897B] focus:ring-[#00897B]">
+                <span>Từ 3.5 trở lên</span>
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- RIGHT CONTENT: VENUES RESULTS LIST (MATCHING MOCKUP 2) -->
+        <section class="lg:col-span-8">
+          <!-- Results Header & Sort Dropdown -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 id="search-results-count" class="font-bold text-slate-900 text-lg sm:text-xl">
+              Kết quả tìm kiếm (24 địa điểm)
+            </h2>
+            <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
+              <span>Sắp xếp:</span>
+              <div class="relative inline-block">
+                <select onchange="state.filters.sort = this.value; renderSearchResults();" 
+                        class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 focus:outline-none focus:border-[#00897B] cursor-pointer">
+                  <option value="rating_desc">Đánh giá cao nhất</option>
+                  <option value="distance_asc">Gần tôi nhất</option>
+                  <option value="popular">Phổ biến nhất</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Results Cards List (The Coffee House, Highlands, Như Lan, Phúc Long, The Alley) -->
+          <div id="search-results-list" class="space-y-4">
+            <!-- Rendered by JavaScript -->
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: TRANG CHI TIẾT ĐỊA ĐIỂM (DETAILS)  -->
+    <!-- ========================================== -->
+    <div id="view-detail" class="view-panel hidden max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      
+      <!-- HERO IMAGE GALLERY (MATCHING MOCKUP 3) -->
+      <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-xs mb-6">
+        
+        <!-- Large Main Image with Overlays -->
+        <div class="relative w-full h-64 sm:h-96 bg-slate-900 overflow-hidden group">
+          <img id="detail-main-image" 
+               src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80" 
+               alt="The Coffee House" 
+               class="w-full h-full object-cover">
+
+          <!-- Overlaid Title Header -->
+          <div class="absolute top-4 left-4 z-10">
+            <span class="bg-black/40 backdrop-blur-md text-white font-bold text-sm sm:text-base px-3.5 py-1.5 rounded-full">
+              The Coffee House
+            </span>
+          </div>
+
+          <!-- Top Right Action Icons -->
+          <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <button onclick="navigator.clipboard?.writeText(window.location.href); showToast('Đã sao chép liên kết chia sẻ!');" 
+                    class="w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 flex items-center justify-center shadow transition-all" title="Chia sẻ">
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            </button>
+            <button id="detail-heart-btn" 
+                    class="w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 flex items-center justify-center shadow transition-all" title="Yêu thích">
+              <i class="fa-regular fa-heart text-lg"></i>
+            </button>
+          </div>
+
+          <!-- Navigation Arrow Buttons: Left & Right -->
+          <button onclick="prevGalleryImage(event)" 
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all z-10">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <button onclick="nextGalleryImage(event)" 
+                  class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all z-10">
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+
+          <!-- Counter Pill (e.g. 1/6) -->
+          <div class="absolute bottom-4 right-4 z-10">
+            <span id="detail-gallery-counter" class="bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1 rounded-full">
+              1/6
+            </span>
+          </div>
+        </div>
+
+        <!-- Thumbnails Row (6 Thumbnails) -->
+        <div id="detail-thumbnails-row" class="p-3 flex items-center gap-2.5 overflow-x-auto no-scrollbar border-t border-slate-100 bg-slate-50/50">
+          <!-- Rendered by JavaScript -->
+        </div>
+      </div>
+
+      <!-- VENUE SUMMARY HEADER (MATCHING MOCKUP 3) -->
+      <div class="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs mb-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <h1 id="detail-name" class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              The Coffee House
+            </h1>
+
+            <!-- Rating Row -->
+            <div class="flex items-center gap-2 mt-2">
+              <div class="flex items-center gap-1 text-amber-500 text-sm">
+                <i class="fa-solid fa-star"></i>
+                <span id="detail-rating" class="font-bold text-slate-800">4.7</span>
+              </div>
+              <span id="detail-reviews-count" class="text-slate-400 text-xs sm:text-sm">(1.2k đánh giá)</span>
+            </div>
+
+            <!-- Price & Tags -->
+            <div class="flex flex-wrap items-center gap-2.5 mt-3 text-xs sm:text-sm">
+              <div class="flex items-center gap-1 text-slate-600 font-medium">
+                <i class="fa-regular fa-clock text-slate-400"></i>
+                <span id="detail-price">20k - 60k</span>
+              </div>
+              <span id="detail-category-tag" class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium text-xs">
+                Cà phê
+              </span>
+              <span id="detail-suitable-tag" class="px-2.5 py-1 rounded-full bg-[#E6F4F1] text-[#00897B] font-medium text-xs flex items-center">
+                Phù hợp: Học tập <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i>
+              </span>
+            </div>
+
+            <!-- Address -->
+            <div class="flex items-center gap-2 mt-3 text-xs sm:text-sm text-slate-600">
+              <i class="fa-solid fa-location-dot text-[#00897B] text-sm"></i>
+              <span id="detail-address">80 Pasteur, P. Hải Châu 1, Q. Hải Châu, TP. Đà Nẵng</span>
+            </div>
+          </div>
+
+          <!-- Button "Chỉ đường" -->
+          <button onclick="showToast('Đang mở bản đồ chỉ đường đến quán...')" 
+                  class="self-start bg-[#00897B] hover:bg-[#00796B] text-white px-5 py-2.5 rounded-xl font-semibold shadow-xs flex items-center gap-2 transition-all cursor-pointer">
+            <i class="fa-solid fa-diamond-turn-right text-sm"></i>
+            <span>Chỉ đường</span>
+          </button>
+        </div>
+
+        <!-- TABS NAVIGATION (TỔNG QUAN, THỰC ĐƠN, ĐÁNH GIÁ, ẢNH) -->
+        <div class="flex items-center gap-8 border-b border-slate-100 mt-6 pt-2">
+          <button id="tab-btn-overview" onclick="switchDetailTab('overview')" class="pb-3 font-bold text-sm text-[#00897B] border-b-2 border-[#00897B] transition-colors">
+            Tổng quan
+          </button>
+          <button id="tab-btn-menu" onclick="switchDetailTab('menu')" class="pb-3 font-medium text-sm text-slate-500 hover:text-slate-800 transition-colors">
+            Thực đơn
+          </button>
+          <button id="tab-btn-reviews" onclick="switchDetailTab('reviews')" class="pb-3 font-medium text-sm text-slate-500 hover:text-slate-800 transition-colors">
+            Đánh giá
+          </button>
+          <button id="tab-btn-photos" onclick="switchDetailTab('photos')" class="pb-3 font-medium text-sm text-slate-500 hover:text-slate-800 transition-colors">
+            Ảnh
+          </button>
+        </div>
+
+        <!-- TAB CONTENT: TỔNG QUAN -->
+        <div id="tab-content-overview" class="pt-6 space-y-6">
+          
+          <!-- Section "Giới thiệu" -->
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-2">Giới thiệu</h3>
+            <p id="detail-intro-desc" class="text-sm text-slate-600 leading-relaxed">
+              The Coffee House là chuỗi cà phê nổi tiếng với không gian hiện đại, thoáng mát và thực đơn đa dạng. Đây là địa điểm lý tưởng để học tập, gặp gỡ bạn bè hoặc thư giãn sau những giờ học căng thẳng.
+            </p>
+          </div>
+
+          <!-- Section "Tiện ích nổi bật" (Wifi, Điều hòa, Chỗ đỗ xe, Thanh toán thẻ) -->
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-3">Tiện ích nổi bật</h3>
+            <div id="detail-amenities-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Section "Thực đơn nổi bật" (Cà phê sữa đá, Trà đào cam sả, Bánh tiramisu) -->
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-3">Thực đơn nổi bật</h3>
+            <div id="detail-menu-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Section "Đánh giá (1.2k)" -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-bold text-slate-900">Đánh giá (1.2k)</h3>
+              <button onclick="switchDetailTab('reviews')" class="text-xs font-semibold text-[#00897B] hover:underline flex items-center gap-1">
+                <span>Xem tất cả</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </button>
+            </div>
+            
+            <div id="detail-reviews-list" class="space-y-3">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB CONTENT: THỰC ĐƠN -->
+        <div id="tab-content-menu" class="hidden pt-6">
+          <h3 class="text-base font-bold text-slate-900 mb-4">Toàn bộ thực đơn</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50">
+              <img src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=200&q=80" class="w-16 h-16 rounded-lg object-cover">
+              <div>
+                <h4 class="font-bold text-sm text-slate-900">Cà phê sữa đá</h4>
+                <p class="text-xs text-slate-500">Đậm vị truyền thống phin cà phê Robusta</p>
+                <span class="text-xs font-bold text-[#00897B] mt-1 block">45.000đ</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50">
+              <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=200&q=80" class="w-16 h-16 rounded-lg object-cover">
+              <div>
+                <h4 class="font-bold text-sm text-slate-900">Trà đào cam sả</h4>
+                <p class="text-xs text-slate-500">Trà thanh mát cùng miếng đào giòn ngọt</p>
+                <span class="text-xs font-bold text-[#00897B] mt-1 block">60.000đ</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50">
+              <img src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=200&q=80" class="w-16 h-16 rounded-lg object-cover">
+              <div>
+                <h4 class="font-bold text-sm text-slate-900">Bánh Tiramisu</h4>
+                <p class="text-xs text-slate-500">Bánh kem phô mai mascarpone mềm mịn</p>
+                <span class="text-xs font-bold text-[#00897B] mt-1 block">55.000đ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: ĐÁNH GIÁ CHI TIẾT -->
+        <div id="tab-content-reviews" class="hidden pt-6 space-y-4">
+          <div class="bg-[#E6F4F1] rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <div class="text-3xl font-extrabold text-slate-900">4.7 <span class="text-sm font-medium text-slate-500">/ 5.0</span></div>
+              <div class="flex text-amber-500 text-xs mt-1 gap-1">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+              </div>
+              <span class="text-xs text-slate-600 mt-1 block">Dựa trên 1.250 lượt đánh giá thực tế</span>
+            </div>
+            <button onclick="switchView('view-review')" class="bg-[#00897B] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#00796B]">
+              Viết nhận xét ngay
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: ẢNH -->
+        <div id="tab-content-photos" class="hidden pt-6">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-36 object-cover">
+            <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-36 object-cover">
+            <img src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-36 object-cover">
+            <img src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-36 object-cover">
+            <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-36 object-cover">
+            <img src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-36 object-cover">
+          </div>
+        </div>
+
+        <!-- STICKY / BOTTOM FULL-WIDTH CTA: VIẾT ĐÁNH GIÁ -->
+        <div class="mt-8 pt-4 border-t border-slate-100">
+          <button onclick="switchView('view-review')" 
+                  class="w-full py-3.5 px-4 rounded-xl font-semibold text-sm bg-[#00897B] hover:bg-[#00796B] text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-regular fa-pen-to-square text-base"></i>
+            <span>Viết đánh giá</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: TRANG PHẢN HỒI / ĐÁNH GIÁ (REVIEW) -->
+    <!-- ========================================== -->
+    <div id="view-review" class="view-panel hidden max-w-xl mx-auto px-4 sm:px-6 py-6">
+      
+      <!-- Top Banner Card (Matching Mockup 4) -->
+      <div class="bg-[#E6F4F1] rounded-2xl p-5 sm:p-6 mb-6 flex items-center gap-4 border border-teal-100 shadow-xs">
+        <!-- Character with phone illustration -->
+        <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" class="w-full h-full">
+            <circle cx="50" cy="50" r="45" fill="#D2ECE6" />
+            <!-- Person Head -->
+            <circle cx="48" cy="38" r="14" fill="#FED7AA" />
+            <!-- Hair -->
+            <path d="M35 34 C 35 24, 60 22, 62 34 C 62 30, 52 26, 42 29 Z" fill="#1E293B"/>
+            <!-- Phone in hand -->
+            <rect x="62" y="38" width="12" height="20" rx="2" fill="#0F766E"/>
+            <rect x="64" y="41" width="8" height="14" rx="1" fill="#FFFFFF"/>
+            <!-- Body in green shirt -->
+            <path d="M30 85 C 30 60, 68 60, 68 85 Z" fill="#00897B"/>
+            <path d="M60 62 L 66 45" stroke="#FED7AA" stroke-width="4" stroke-linecap="round"/>
+            <!-- Small speech / heart star -->
+            <circle cx="78" cy="28" r="3" fill="#F59E0B"/>
+            <path d="M74 24 Q 76 18 78 24" stroke="#00897B" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+            Chia sẻ trải nghiệm của bạn
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+            Đánh giá của bạn sẽ giúp chúng mình cải thiện và mang đến trải nghiệm tốt hơn.
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Form Card (Matching Mockup 4) -->
+      <form onsubmit="submitReview(event)" class="bg-white rounded-2xl border border-slate-100 p-5 sm:p-7 shadow-xs space-y-6">
+        
+        <!-- Field 1: Đánh giá địa điểm -->
+        <div>
+          <label class="block text-sm font-bold text-slate-900 mb-2">Đánh giá địa điểm</label>
+          <div class="flex items-center gap-3">
+            <div id="review-stars-container" class="flex items-center gap-1.5 text-amber-500">
+              <button type="button" onclick="setReviewRating(1)" class="star-btn cursor-pointer p-0.5"><i class="fa-solid fa-star text-2xl sm:text-3xl"></i></button>
+              <button type="button" onclick="setReviewRating(2)" class="star-btn cursor-pointer p-0.5"><i class="fa-solid fa-star text-2xl sm:text-3xl"></i></button>
+              <button type="button" onclick="setReviewRating(3)" class="star-btn cursor-pointer p-0.5"><i class="fa-solid fa-star text-2xl sm:text-3xl"></i></button>
+              <button type="button" onclick="setReviewRating(4)" class="star-btn cursor-pointer p-0.5"><i class="fa-solid fa-star text-2xl sm:text-3xl"></i></button>
+              <button type="button" onclick="setReviewRating(5)" class="star-btn cursor-pointer p-0.5"><i class="fa-solid fa-star text-2xl sm:text-3xl"></i></button>
+            </div>
+            <span id="review-rating-score" class="text-sm font-bold text-slate-600 ml-1">5/5</span>
+          </div>
+        </div>
+
+        <!-- Field 2: Nhận xét của bạn (tùy chọn) -->
+        <div>
+          <label class="block text-sm font-bold text-slate-900 mb-2">Nhận xét của bạn <span class="font-normal text-slate-400 text-xs">(tùy chọn)</span></label>
+          <div class="relative">
+            <textarea id="review-comment-input" 
+                      rows="4" 
+                      maxlength="500" 
+                      oninput="handleReviewCommentInput(this)"
+                      placeholder="Hãy chia sẻ trải nghiệm của bạn..." 
+                      class="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all resize-none"></textarea>
+            <div class="text-right text-[11px] text-slate-400 mt-1">
+              <span id="review-char-count">0/500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Field 3: Thêm hình ảnh (tùy chọn) Dropzone -->
+        <div>
+          <label class="block text-sm font-bold text-slate-900 mb-2">Thêm hình ảnh <span class="font-normal text-slate-400 text-xs">(tùy chọn)</span></label>
+          <div onclick="document.getElementById('review-file-input').click()" 
+               class="border-2 border-dashed border-teal-200 bg-teal-50/30 hover:bg-teal-50/60 rounded-xl p-6 text-center cursor-pointer transition-colors group">
+            <input id="review-file-input" type="file" multiple accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+            <div class="w-12 h-12 rounded-full bg-white text-[#00897B] shadow-xs mx-auto flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-camera text-lg"></i>
+            </div>
+            <p class="text-xs text-slate-600 font-medium">
+              Kéo thả ảnh hoặc nhấn để chọn ảnh
+            </p>
+          </div>
+          <!-- Uploaded images thumbnails -->
+          <div id="review-uploaded-previews" class="flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar"></div>
+        </div>
+
+        <!-- Field 4: Bạn đã muốn đề xuất các địa điểm này cho bạn bè không? -->
+        <div>
+          <label class="block text-xs sm:text-sm font-bold text-slate-900 mb-2.5">
+            Bạn đã muốn đề xuất các địa điểm này cho bạn bè không?
+          </label>
+          <div class="flex items-center gap-2.5">
+            <button id="btn-recommend-yes" type="button" onclick="setRecommendation('yes')" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-medium bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-standard cursor-pointer">
+              Có
+            </button>
+            <button id="btn-recommend-no" type="button" onclick="setRecommendation('no')" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-[#00897B] text-white shadow-sm transition-standard cursor-pointer">
+              Không
+            </button>
+            <button id="btn-recommend-maybe" type="button" onclick="setRecommendation('maybe')" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-medium bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-standard cursor-pointer">
+              Có thể
+            </button>
+          </div>
+        </div>
+
+        <!-- Field 5: Bạn đánh giá về (Không gian, Thức ăn, Đồ uống, Phục vụ) -->
+        <div>
+          <label class="block text-xs sm:text-sm font-bold text-slate-900 mb-2.5">
+            Bạn đánh giá về
+          </label>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="pill-aspect-space" onclick="toggleReviewAspect('space')" class="cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#E6F4F1] text-[#00897B] border border-teal-200 flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-check text-xs"></i>
+              <span>Không gian</span>
+            </span>
+            <span id="pill-aspect-food" onclick="toggleReviewAspect('food')" class="cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#E6F4F1] text-[#00897B] border border-teal-200 flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-check text-xs"></i>
+              <span>Thức ăn</span>
+            </span>
+            <span id="pill-aspect-drink" onclick="toggleReviewAspect('drink')" class="cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#E6F4F1] text-[#00897B] border border-teal-200 flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-check text-xs"></i>
+              <span>Đồ uống</span>
+            </span>
+            <span id="pill-aspect-service" onclick="toggleReviewAspect('service')" class="cursor-pointer px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200 flex items-center gap-1.5 hover:bg-slate-100 transition-all">
+              <i class="hidden"></i>
+              <span>Phục vụ</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" 
+                class="w-full py-3.5 px-4 rounded-xl font-semibold text-sm bg-[#00897B] hover:bg-[#00796B] text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center cursor-pointer">
+          <span>Gửi đánh giá</span>
+        </button>
+
+      </form>
+
+      <!-- Bottom Thank You Card (Matching Mockup 4) -->
+      <div id="review-thank-card" class="bg-[#E6F4F1] rounded-2xl p-5 text-center mt-6 border border-teal-100 transition-all">
+        <div class="text-[#00897B] text-xl mb-1.5">
+          <i class="fa-regular fa-heart"></i>
+        </div>
+        <h4 class="font-bold text-slate-800 text-xs sm:text-sm">Cảm ơn bạn đã chia sẻ!</h4>
+        <p class="text-xs text-slate-600 mt-0.5">
+          Những đánh giá của bạn giúp Spotly ngày càng tốt hơn.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 5: ĐĂNG NHẬP / ĐĂNG KÝ (AUTH)         -->
+    <!-- ========================================== -->
+    <div id="view-auth" class="view-panel hidden max-w-md mx-auto px-4 sm:px-6 py-10">
+      
+      <!-- AUTH CONTAINER CARD (MATCHING MOCKUP 5) -->
+      <div class="bg-white rounded-3xl border border-slate-100 shadow-md p-6 sm:p-8">
+        
+        <!-- Spotly Logo Header -->
+        <div class="flex items-center justify-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-full bg-[#00897B] flex items-center justify-center text-white shadow-xs">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold tracking-tight text-[#00796B]">Spotly</span>
+        </div>
+
+        <!-- Greeting Headline -->
+        <div class="text-center mb-6">
+          <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">
+            Chào mừng bạn trở lại!
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Đăng nhập để khám phá thêm nhiều địa điểm thú vị.
+          </p>
+        </div>
+
+        <!-- Toggle Tabs: Đăng nhập vs Đăng ký -->
+        <div class="flex items-center justify-center gap-12 border-b border-slate-100 mb-6">
+          <button id="auth-tab-login" onclick="switchAuthMode('login')" class="pb-2 font-bold text-sm text-[#00897B] border-b-2 border-[#00897B] transition-colors cursor-pointer">
+            Đăng nhập
+          </button>
+          <button id="auth-tab-register" onclick="switchAuthMode('register')" class="pb-2 font-medium text-sm text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+            Đăng ký
+          </button>
+        </div>
+
+        <!-- FORM 1: ĐĂNG NHẬP (LOGIN) -->
+        <form id="auth-form-login" onsubmit="event.preventDefault(); handleAuthSubmit('login');" class="space-y-4">
+          
+          <!-- Email / Phone -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Email hoặc số điện thoại</label>
+            <input type="text" 
+                   required
+                   placeholder="Nhập email hoặc số điện thoại" 
+                   value="alex.nguyen@example.com"
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all">
+          </div>
+
+          <!-- Password -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-slate-700">Mật khẩu</label>
+              <button type="button" onclick="showToast('Liên kết đặt lại mật khẩu đã được gửi đến email của bạn!')" class="text-xs text-[#00897B] hover:underline font-medium">
+                Quên mật khẩu?
+              </button>
+            </div>
+            <div class="relative">
+              <input id="login-password-input" 
+                     type="password" 
+                     required
+                     value="SpotlyPass123"
+                     placeholder="Nhập mật khẩu" 
+                     class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all">
+              <button type="button" onclick="togglePasswordVisibility('login-password-input', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Login Button -->
+          <button type="submit" 
+                  class="w-full py-3 rounded-xl font-semibold text-sm bg-[#00897B] hover:bg-[#00796B] text-white shadow-md transition-all cursor-pointer mt-2">
+            Đăng nhập
+          </button>
+
+          <!-- Divider -->
+          <div class="relative my-5">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-slate-100"></div>
+            </div>
+            <div class="relative flex justify-center text-xs">
+              <span class="bg-white px-3 text-slate-400 font-medium">Hoặc đăng nhập với</span>
+            </div>
+          </div>
+
+          <!-- Social Buttons: Google, Facebook, Apple (Matching Mockup 5) -->
+          <div class="flex items-center justify-center gap-4">
+            <!-- Google -->
+            <button type="button" onclick="handleAuthSubmit('login')" class="w-12 h-12 rounded-2xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center shadow-2xs hover:shadow-xs transition-all">
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+              </svg>
+            </button>
+
+            <!-- Facebook -->
+            <button type="button" onclick="handleAuthSubmit('login')" class="w-12 h-12 rounded-2xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-[#1877F2] shadow-2xs hover:shadow-xs transition-all">
+              <i class="fa-brands fa-facebook-f text-lg"></i>
+            </button>
+
+            <!-- Apple -->
+            <button type="button" onclick="handleAuthSubmit('login')" class="w-12 h-12 rounded-2xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-900 shadow-2xs hover:shadow-xs transition-all">
+              <i class="fa-brands fa-apple text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Bottom Switch Link -->
+          <p class="text-center text-xs text-slate-500 pt-3">
+            Chưa có tài khoản? 
+            <button type="button" onclick="switchAuthMode('register')" class="text-[#00897B] font-bold hover:underline ml-1">
+              Đăng ký ngay
+            </button>
+          </p>
+
+        </form>
+
+        <!-- FORM 2: ĐĂNG KÝ (REGISTER) -->
+        <form id="auth-form-register" onsubmit="event.preventDefault(); handleAuthSubmit('register');" class="hidden space-y-4">
+          
+          <div class="text-center mb-3">
+            <h3 class="text-base font-bold text-slate-900">Đăng ký</h3>
+            <p class="text-xs text-slate-500">Tạo tài khoản để khám phá nhiều địa điểm hơn!</p>
+          </div>
+
+          <!-- Full Name -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Họ và tên</label>
+            <input type="text" 
+                   required
+                   placeholder="Nhập họ và tên" 
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all">
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Email</label>
+            <input type="email" 
+                   required
+                   placeholder="Nhập email" 
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all">
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Mật khẩu</label>
+            <div class="relative">
+              <input id="register-password-input" 
+                     type="password" 
+                     required
+                     minlength="6"
+                     placeholder="Tối thiểu 6 ký tự" 
+                     class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00897B] focus:ring-2 focus:ring-teal-100 transition-all">
+              <button type="button" onclick="togglePasswordVisibility('register-password-input', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Register Submit -->
+          <button type="submit" 
+                  class="w-full py-3 rounded-xl font-semibold text-sm bg-[#00897B] hover:bg-[#00796B] text-white shadow-md transition-all cursor-pointer mt-2">
+            Đăng ký
+          </button>
+
+          <!-- Bottom Switch Link -->
+          <p class="text-center text-xs text-slate-500 pt-3">
+            Đã có tài khoản? 
+            <button type="button" onclick="switchAuthMode('login')" class="text-[#00897B] font-bold hover:underline ml-1">
+              Đăng nhập ngay
+            </button>
+          </p>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- FOOTER (MATCHING ALL MOCKUPS)              -->
+  <!-- ========================================== -->
+  <footer class="bg-[#064E3B] text-white mt-auto pt-14 pb-8 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-emerald-900/60">
+        
+        <!-- Column 1: Brand & Socials -->
+        <div class="md:col-span-2 space-y-4">
+          <div onclick="switchView('view-home')" class="flex items-center gap-2.5 cursor-pointer">
+            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#064E3B] shadow-xs">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+              </svg>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white">Spotly</span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-emerald-100/80 font-normal">
+            Kết nối bạn với những địa điểm tuyệt vời
+          </p>
+
+          <!-- Social media icons -->
+          <div class="flex items-center gap-3.5 pt-1 text-white/90">
+            <a href="#" class="w-8 h-8 rounded-full bg-emerald-900/70 hover:bg-emerald-800 flex items-center justify-center transition-colors">
+              <i class="fa-brands fa-facebook-f text-sm"></i>
+            </a>
+            <a href="#" class="w-8 h-8 rounded-full bg-emerald-900/70 hover:bg-emerald-800 flex items-center justify-center transition-colors">
+              <i class="fa-brands fa-instagram text-sm"></i>
+            </a>
+            <a href="#" class="w-8 h-8 rounded-full bg-emerald-900/70 hover:bg-emerald-800 flex items-center justify-center transition-colors">
+              <i class="fa-brands fa-youtube text-sm"></i>
+            </a>
+            <a href="#" class="w-8 h-8 rounded-full bg-emerald-900/70 hover:bg-emerald-800 flex items-center justify-center transition-colors">
+              <i class="fa-brands fa-tiktok text-sm"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Column 2: Liên kết -->
+        <div>
+          <h4 class="font-bold text-sm text-white mb-3 tracking-wide">Liên kết</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-emerald-100/75">
+            <li><button onclick="switchView('view-home')" class="hover:text-white transition-colors">Trang chủ</button></li>
+            <li><button onclick="switchView('view-search')" class="hover:text-white transition-colors">Khám phá</button></li>
+            <li><button onclick="showToast('Spotly - Nền tảng khám phá địa điểm hàng đầu.')" class="hover:text-white transition-colors">Về Spotly</button></li>
+            <li><button onclick="showToast('Liên hệ hỗ trợ: contact@spotly.vn')" class="hover:text-white transition-colors">Liên hệ</button></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Hỗ trợ -->
+        <div>
+          <h4 class="font-bold text-sm text-white mb-3 tracking-wide">Hỗ trợ</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-emerald-100/75">
+            <li><a href="#" class="hover:text-white transition-colors">Điều khoản sử dụng</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Câu hỏi thường gặp</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Copyright -->
+      <div class="pt-6 text-center text-xs text-emerald-200/60 font-light">
+        © 2025 Spotly. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
